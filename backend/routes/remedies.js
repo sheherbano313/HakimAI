@@ -6,7 +6,7 @@ const router = express.Router();
 const plantsDB = new JSONDatabase('medicinal_plants.json');
 
 // Gemini API configuration
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY_T;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // Log API configuration status
@@ -334,7 +334,7 @@ ${userPrompt}`;
       console.log('🌿 Sending request to Gemini API...');
       console.log('🔑 API Key available:', !!GEMINI_API_KEY);
       console.log('📡 API URL:', GEMINI_API_URL.replace(GEMINI_API_KEY, '***HIDDEN***'));
-      
+
       const geminiResponse = await fetch(GEMINI_API_URL, {
         method: 'POST',
         headers: {
@@ -360,25 +360,36 @@ ${userPrompt}`;
 
       const geminiData = await geminiResponse.json();
       console.log('📋 Gemini response data structure:', Object.keys(geminiData));
-      
+
       // Check if Gemini response has the expected structure
       if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content) {
         console.error('❌ Unexpected Gemini response structure:', JSON.stringify(geminiData, null, 2));
         throw new Error('Invalid response structure from Gemini API');
       }
-      
+
       const aiResponse = geminiData.candidates[0].content.parts[0].text;
       console.log('✅ Gemini response text length:', aiResponse.length);
 
       console.log('Gemini response generated successfully');
+
+      // Return successful response inside the try block where aiResponse is defined
+      return res.json({
+        success: true,
+        message: 'Chatbot response generated',
+        data: {
+          question: message,
+          answer: aiResponse,
+          timestamp: new Date().toISOString()
+        }
+      });
     } catch (apiError) {
       console.error('❌ Gemini API call failed:', apiError);
-      
+
       // Fallback: Provide basic information from local data
       console.log('🔄 Using fallback response from local data...');
-      
+
       const fallbackResponse = generateFallbackResponse(message, allPlants);
-      
+
       return res.json({
         success: true,
         message: 'Fallback response generated (Gemini API unavailable)',
@@ -390,16 +401,6 @@ ${userPrompt}`;
         }
       });
     }
-
-    res.json({
-      success: true,
-      message: 'Chatbot response generated',
-      data: {
-        question: message,
-        answer: aiResponse,
-        timestamp: new Date().toISOString()
-      }
-    });
 
   } catch (error) {
     console.error('Chatbot error:', error);
