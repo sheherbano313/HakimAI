@@ -13,8 +13,8 @@ pnpm-debug.log*
 .env.production.local
 
 # React Native
-.expo
-.expo-shared
+.expo/
+.expo-shared/
 expo-env.d.ts
 
 # Metro bundler
