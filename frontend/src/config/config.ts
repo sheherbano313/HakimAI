@@ -3,16 +3,14 @@
 export const CONFIG = {
   // API Configuration
   API: {
-    // Change this to your backend URL
-    BASE_URL: 'http://localhost:5000/api',
+    // For mobile development, use your computer's IP address
+    // Replace 192.168.18.36 with your actual computer's IP address
+    BASE_URL: __DEV__ ? 'http://192.168.18.36:5001/api' : 'http://localhost:5001/api',
     
-    // For development on physical device, use your computer's IP address
-    // BASE_URL: 'http://192.168.1.100:5000/api',
+    // Alternative: Use localhost for web development
+    // BASE_URL: 'http://localhost:5000/api',
     
-    // For Expo Go on physical device, you might need to use your computer's IP
-    // BASE_URL: 'http://YOUR_COMPUTER_IP:5000/api',
-    
-    TIMEOUT: 10000,
+    TIMEOUT: 15000, // Increased timeout for mobile
   },
   
   // App Configuration
@@ -62,11 +60,11 @@ export const getApiUrl = () => {
   if (__DEV__) {
     // For web development
     if (typeof window !== 'undefined') {
-      return CONFIG.API.BASE_URL;
+      return 'http://localhost:5001/api';
     }
     
-    // For mobile development, you might want to use your computer's IP
-    // return 'http://192.168.1.100:5000/api';
+    // For mobile development, use your computer's IP
+    return 'http://192.168.18.36:5001/api';
   }
   
   return CONFIG.API.BASE_URL;

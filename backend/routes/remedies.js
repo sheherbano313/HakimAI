@@ -200,14 +200,6 @@ router.post('/save', auth, (req, res) => {
 // Chatbot endpoint with RAG (Retrieval-Augmented Generation)
 router.post('/chatbot', async (req, res) => {
   try {
-    // Check if Gemini API key is available
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        error: 'Gemini API key is not configured. Please check your environment variables.'
-      });
-    }
-
     const { message } = req.body;
     
     if (!message) {
@@ -226,9 +218,29 @@ router.post('/chatbot', async (req, res) => {
       throw new Error('No medicinal plants data available');
     }
 
+    // Check if Gemini API key is available
+    if (!GEMINI_API_KEY) {
+      console.log('⚠️ Gemini API key not available, using fallback response');
+      const fallbackResult = ragService.generateFallbackAnswer(message, allPlants);
+      
+      return res.json({
+        success: true,
+        message: 'Fallback response generated (AI service unavailable)',
+        data: {
+          question: message,
+          answer: fallbackResult.answer,
+          confidence: fallbackResult.confidence,
+          sources: fallbackResult.sources,
+          timestamp: new Date().toISOString(),
+          method: 'fallback',
+          note: 'This is a fallback response as the AI service is currently unavailable. Please consult healthcare professionals for medical advice.'
+        }
+      });
+    }
+
     // Set a timeout for the RAG operation
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('RAG operation timeout')), 15000); // 15 seconds timeout
+      setTimeout(() => reject(new Error('RAG operation timeout')), 20000); // 20 seconds timeout
     });
 
     try {
@@ -300,9 +312,29 @@ router.post('/chatbot', async (req, res) => {
       });
     }
 
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate chatbot response. Please try again.'
+    // Provide a helpful fallback response even for unexpected errors
+    const fallbackMessage = `I understand you're asking about "${message}". While I'm experiencing some technical difficulties, here are some general tips about herbal medicine:
+
+• Always consult with healthcare professionals before using any herbal remedies
+• Research the specific herb and its potential side effects
+• Start with small doses and monitor your body's response
+• Be aware of potential interactions with medications
+• Purchase herbs from reputable sources
+
+For specific advice about "${message}", I recommend consulting with a qualified herbalist or healthcare provider.`;
+
+    return res.json({
+      success: true,
+      message: 'Fallback response due to technical issues',
+      data: {
+        question: message,
+        answer: fallbackMessage,
+        confidence: 0.5,
+        sources: [],
+        timestamp: new Date().toISOString(),
+        method: 'error-fallback',
+        note: 'This response was generated due to technical difficulties. Please consult healthcare professionals for medical advice.'
+      }
     });
   }
 });

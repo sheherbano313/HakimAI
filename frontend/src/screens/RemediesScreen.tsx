@@ -32,12 +32,12 @@ export default function RemediesScreen() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
     setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
+      flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
   }, [messages]);
 
@@ -52,11 +52,15 @@ export default function RemediesScreen() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputMessage.trim();
     setInputMessage("");
     setIsLoading(true);
 
     try {
-      const response = await remediesAPI.askChatbot(inputMessage.trim());
+      console.log('Sending message to chatbot:', currentInput);
+      const response = await remediesAPI.askChatbot(currentInput);
+      
+      console.log('Chatbot response:', response);
       
       if (response.success && response.data) {
         const botMessage: ChatMessage = {
@@ -74,12 +78,19 @@ export default function RemediesScreen() {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        message: "I'm sorry, I'm having trouble processing your request right now. Please try again in a moment.",
+        message: "I'm sorry, I'm having trouble processing your request right now. Please check your internet connection and try again.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (event: any) => {
+    if (event.nativeEvent.key === 'Enter' && !event.nativeEvent.shiftKey) {
+      event.preventDefault();
+      sendMessage();
     }
   };
 
@@ -104,6 +115,16 @@ export default function RemediesScreen() {
       </View>
     </View>
   );
+
+  const renderLoadingIndicator = () => {
+    if (!isLoading) return null;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color="#2e7d32" />
+        <Text style={styles.loadingText}>AI is thinking...</Text>
+      </View>
+    );
+  };
 
   const suggestedQuestions = [
     "What herbs help with respiratory problems like cough and asthma?",
@@ -131,33 +152,21 @@ export default function RemediesScreen() {
         <Text style={styles.headerSubtitle}>Ask me about traditional remedies and medicinal plants</Text>
       </View>
 
-      {/* Safety Disclaimer */}
-      <View style={styles.disclaimerContainer}>
-        <Text style={styles.disclaimerText}>
-          ⚠️ Disclaimer: This AI provides information based on traditional knowledge. Always consult healthcare professionals for medical advice, especially for serious conditions.
-        </Text>
-      </View>
+
 
       {/* Chat Messages */}
-      <ScrollView
-        ref={scrollViewRef}
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessage}
+        keyExtractor={(item) => item.id}
         style={styles.messagesContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <FlatList
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-        />
-        
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#2e7d32" />
-            <Text style={styles.loadingText}>AI is thinking...</Text>
-          </View>
-        )}
-      </ScrollView>
+        contentContainerStyle={styles.messagesContentContainer}
+        showsVerticalScrollIndicator={true}
+        ListFooterComponent={renderLoadingIndicator}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      />
 
       {/* Suggested Questions */}
       {messages.length === 1 && (
@@ -187,7 +196,9 @@ export default function RemediesScreen() {
           multiline
           maxLength={500}
           onSubmitEditing={sendMessage}
+          onKeyPress={handleKeyPress}
           blurOnSubmit={false}
+          editable={!isLoading}
         />
         <TouchableOpacity
           style={[
@@ -235,6 +246,9 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flex: 1,
     padding: 20,
+  },
+  messagesContentContainer: {
+    paddingBottom: 100, // Add padding at the bottom to prevent content from being hidden behind the input
   },
   messageContainer: {
     marginBottom: 10,
@@ -355,22 +369,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  disclaimerContainer: {
-    padding: 15,
-    backgroundColor: "#f8f8f8",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  disclaimerText: {
-    fontSize: 14,
-    color: "#555",
-    textAlign: "center",
-    lineHeight: 20,
-  },
+
 });

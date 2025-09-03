@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#2e7d32" stroke="#1b5e20" stroke-width="8"/>
+  
+  <!-- Inner circle -->
+  <circle cx="256" cy="256" r="180" fill="#4caf50" stroke="#2e7d32" stroke-width="4"/>
+  
+  <!-- Leaf shape -->
+  <path d="M256 120 C 200 120, 160 160, 160 220 C 160 280, 200 320, 256 320 C 312 320, 352 280, 352 220 C 352 160, 312 120, 256 120 Z" fill="#81c784"/>
+  
+  <!-- Leaf vein -->
+  <path d="M256 120 L 256 320" stroke="#2e7d32" stroke-width="3" stroke-linecap="round"/>
+  <path d="M256 160 L 220 200" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+  <path d="M256 160 L 292 200" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+  <path d="M256 200 L 200 240" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+  <path d="M256 200 L 312 240" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- AI text -->
+  <text x="256" y="420" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="48" font-weight="bold">HakimAI</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="120" cy="120" r="8" fill="#81c784" opacity="0.6"/>
+  <circle cx="392" cy="120" r="8" fill="#81c784" opacity="0.6"/>
+  <circle cx="120" cy="392" r="8" fill="#81c784" opacity="0.6"/>
+  <circle cx="392" cy="392" r="8" fill="#81c784" opacity="0.6"/>
+</svg>

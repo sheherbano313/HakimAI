@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
+import CustomLogo from "../components/CustomLogo";
 
 type RootStackParamList = {
   Remedies: undefined;
@@ -23,32 +24,41 @@ export default function ModulesScreen() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>HakimAI Modules</Text>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.logoContainer}>
+            <CustomLogo size="large" color="#fff" />
+          </View>
+          <Text style={styles.subtitle}>Choose a module to get started</Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Remedies")}>
-          <Text style={styles.buttonTitle}>🌿 Natural Remedies</Text>
-          <Text style={styles.buttonText}>Get herbal remedies by entering your symptoms</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Remedies")}>
+            <Text style={styles.buttonTitle}>🌿 Natural Remedies</Text>
+            <Text style={styles.buttonText}>Get herbal remedies by entering your symptoms</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("HealthTips")}>
-          <Text style={styles.buttonTitle}>💡 Health Tips</Text>
-          <Text style={styles.buttonText}>Learn daily tips for a healthy lifestyle</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("HealthTips")}>
+            <Text style={styles.buttonTitle}>💡 Health Tips</Text>
+            <Text style={styles.buttonText}>Learn daily tips for a healthy lifestyle</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Feedback")}>
-          <Text style={styles.buttonTitle}>📝 Feedback</Text>
-          <Text style={styles.buttonText}>Share your experience with HakimAI</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Feedback")}>
+            <Text style={styles.buttonTitle}>📝 Feedback</Text>
+            <Text style={styles.buttonText}>Share your experience with HakimAI</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("ContactUs")}>
-          <Text style={styles.buttonTitle}>📞 Contact Us</Text>
-          <Text style={styles.buttonText}>Reach out for help or inquiries</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("ContactUs")}>
+            <Text style={styles.buttonTitle}>📞 Contact Us</Text>
+            <Text style={styles.buttonText}>Reach out for help or inquiries</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Hakims")}>
-          <Text style={styles.buttonTitle}>👨‍⚕️ Local Hakims</Text>
-          <Text style={styles.buttonText}>Find traditional healers near you</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Hakims")}>
+            <Text style={styles.buttonTitle}>👨‍⚕️ Local Hakims</Text>
+            <Text style={styles.buttonText}>Find traditional healers near you</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </ImageBackground>
   );
@@ -63,15 +73,27 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)", // dark overlay for readability
-    justifyContent: "center",
-    alignItems: "center",
     padding: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 18,
     color: "white",
     marginBottom: 30,
+    textAlign: "center",
+    opacity: 0.9,
   },
   button: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",

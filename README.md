@@ -39,7 +39,11 @@ hakimai_project/
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI (for frontend)
-- OpenAI API key (for AI features)
+- Expo Go app on your mobile device (for mobile testing)
+- Gemini API key (for AI features)
+
+### Mobile Setup
+For detailed mobile setup instructions, see [MOBILE_SETUP_GUIDE.md](./MOBILE_SETUP_GUIDE.md)
 
 ### 1. Backend Setup
 
@@ -54,7 +58,7 @@ cp env.example .env
 
 # Edit .env with your values:
 # JWT_SECRET=your-secret-key
-# OPENAI_API_KEY=your-openai-api-key
+# GEMINI_API_KEY_T=your-gemini-api-key
 
 # Start development server
 npm run dev
@@ -150,7 +154,24 @@ This will test all major endpoints and verify the system is working correctly.
 2. Deploy the `web-build` folder to your hosting service
 3. Update API endpoints to point to your production backend
 
+## 🔮 Recent Fixes & Improvements
+
+### ✅ Fixed Issues
+- **Mobile App Connectivity**: Updated API configuration to work on mobile devices
+- **Chatbot Stuck Issue**: Improved error handling and timeout management
+- **Enter Key Support**: Added proper Enter key handling in chatbot
+- **Health Tips Chatbot**: Enhanced with AI-powered responses
+- **Better Error Messages**: More user-friendly error handling
+
+### 🚀 New Features
+- **Health Tips Chatbot**: Interactive AI assistant for wellness advice
+- **Enhanced Chatbot Memory**: Better conversation flow
+- **Mobile-Optimized UI**: Improved mobile experience
+- **Comprehensive Setup Guide**: Detailed mobile setup instructions
+
 ## 🔮 Future Enhancements
+
+For a complete list of planned features, see [FEATURES_ENHANCEMENT_GUIDE.md](./FEATURES_ENHANCEMENT_GUIDE.md)
 
 - [ ] Database migration to PostgreSQL/MongoDB
 - [ ] User roles and permissions system

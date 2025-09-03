@@ -25,5 +25,14 @@
     "role": "user",
     "id": "mf47l6905muck6fqi9i",
     "createdAt": "2025-09-03T16:45:55.044Z"
+  },
+  {
+    "name": "Sheher Bano",
+    "email": "sheherbano6231@gmail.com",
+    "password": "$2a$10$XcgK1YgReQQu8H5VPK/AZO41JeTwoLgdjFeZXug/j6MN3ZjfEhwhe",
+    "phone": "+923496539580",
+    "role": "user",
+    "id": "mf49i4vnddujeoi8f0m",
+    "createdAt": "2025-09-03T17:39:32.531Z"
   }
 ]

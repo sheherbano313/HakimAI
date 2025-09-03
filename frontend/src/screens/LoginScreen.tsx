@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types/navigation";
 import { authAPI, AuthResponse } from "../api/apiService";
+import CustomLogo from "../components/CustomLogo";
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -70,7 +71,10 @@ export default function LoginScreen() {
       blurRadius={2}
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>HakimAI</Text>
+        <View style={styles.logoContainer}>
+          <CustomLogo size="large" color="#2e7d32" />
+        </View>
+        <Text style={styles.subtitle}>Herbal Medicine AI Assistant</Text>
         
 
 
@@ -145,12 +149,16 @@ const styles = StyleSheet.create({
     padding: 32,
     elevation: 5,
   },
-  title: {
-    fontSize: 34,
-    fontWeight: "bold",
-    color: "#2e7d32",
-    marginBottom: 28,
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
     textAlign: "center",
+    marginBottom: 28,
+    fontStyle: "italic",
   },
   input: {
     height: 50,

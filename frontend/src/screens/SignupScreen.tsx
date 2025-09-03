@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { authAPI } from "../api/apiService";
+import CustomLogo from "../components/CustomLogo";
 
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
 
@@ -72,6 +73,9 @@ export default function SignupScreen() {
       blurRadius={2}
     >
       <View style={styles.overlay}>
+        <View style={styles.logoContainer}>
+          <CustomLogo size="large" color="#2e7d32" />
+        </View>
         <Text style={styles.title}>Create Account</Text>
 
         <TextInput
@@ -157,6 +161,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 28,
     elevation: 5,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 16,
   },
   title: {
     fontSize: 30,

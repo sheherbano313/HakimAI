@@ -4,16 +4,21 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-// Enhanced CORS configuration
+// Enhanced CORS configuration for mobile development
 const corsOptions = {
   origin: [
     'http://localhost:3000',
     'http://localhost:19006', // Expo web
     'http://localhost:8081',  // React Native Metro
+    'http://localhost:8082',  // React Native Metro (alternative port)
     'exp://localhost:19000',  // Expo Go
-    'http://192.168.1.100:19006', // Local network (adjust IP as needed)
+    'http://192.168.18.36:19006', // Local network (your actual IP)
+    'http://192.168.18.36:3000', // Alternative local network
+    'http://192.168.18.36:8081', // Alternative local network
+    'http://192.168.18.36:8082', // Alternative local network
+    'exp://192.168.18.36:19000', // Expo Go on local network
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
