@@ -4,22 +4,23 @@
   "description": "HakimAI Backend - Herbal Medicine API with User Authentication",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "dev": "nodemon server.js",
-    "test": "node test-endpoints.js",
-    "test-api": "node test-api.js"
+    "test-rag": "node test-rag.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
     "openai": "^5.15.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.11.0",
     "nodemon": "^3.0.2"
   },
   "keywords": [

@@ -23,14 +23,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    console.log('Login button clicked!');
-    console.log('Email:', email);
-    console.log('Password:', password);
-    console.log('Email length:', email.length);
-    console.log('Password length:', password.length);
-    console.log('Email type:', typeof email);
-    console.log('Password type:', typeof password);
-    
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
@@ -38,14 +30,9 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      console.log('Making API call to login...');
-      console.log('Request payload:', { email, password });
       const response: AuthResponse = await authAPI.login({ email, password });
-      console.log('Login response:', response);
-      console.log('Login successful, navigating to App...');
       try {
         navigation.replace("App");
-        console.log('Navigation to App successful');
       } catch (navError) {
         console.error('Navigation error:', navError);
         // Fallback to Alert if navigation fails
@@ -53,10 +40,8 @@ export default function LoginScreen() {
           {
             text: "OK",
             onPress: () => {
-              console.log('Alert OK pressed, attempting navigation to App again...');
               try {
                 navigation.replace("App");
-                console.log('Navigation to App successful on retry');
               } catch (retryError) {
                 console.error('Navigation retry error:', retryError);
               }
@@ -87,26 +72,14 @@ export default function LoginScreen() {
       <View style={styles.overlay}>
         <Text style={styles.title}>HakimAI</Text>
         
-        {/* Debug display - remove this later */}
-        <View style={styles.debugContainer}>
-          <Text style={styles.debugText}>Debug Info:</Text>
-          <Text style={styles.debugText}>Email: "{email}" (length: {email.length})</Text>
-          <Text style={styles.debugText}>Password: "{password}" (length: {password.length})</Text>
-          <Text style={styles.debugText}>Loading: {loading.toString()}</Text>
-        </View>
+
 
         <TextInput
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#e0e0e0"
           value={email}
-          onChangeText={(text) => {
-            console.log('Email input changed:', text);
-            console.log('Email input type:', typeof text);
-            console.log('Email input length:', text.length);
-            setEmail(text);
-            console.log('Email state after setEmail:', text);
-          }}
+          onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
@@ -118,27 +91,13 @@ export default function LoginScreen() {
           placeholderTextColor="#e0e0e0"
           secureTextEntry
           value={password}
-          onChangeText={(text) => {
-            console.log('Password input changed:', text);
-            console.log('Password input type:', typeof text);
-            console.log('Password input length:', text.length);
-            setPassword(text);
-            console.log('Password state after setPassword:', text);
-          }}
+          onChangeText={setPassword}
           autoComplete="password"
         />
 
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]} 
-          onPress={() => {
-            console.log('Button pressed!');
-            console.log('Current state - email:', email, 'password:', password, 'loading:', loading);
-            if (!loading) {
-              handleLogin();
-            } else {
-              console.log('Button is disabled due to loading state');
-            }
-          }}
+          onPress={handleLogin}
           disabled={loading}
           activeOpacity={0.7}
         >
@@ -147,46 +106,6 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.buttonText}>Log In</Text>
           )}
-        </TouchableOpacity>
-
-        {/* Test button to verify TouchableOpacity is working */}
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#e74c3c', marginTop: 10 }]} 
-          onPress={() => Alert.alert("Test", "Button is working!")}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.buttonText}>Test Button</Text>
-        </TouchableOpacity>
-
-        {/* Test button to set test values */}
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#9b59b6', marginTop: 10 }]} 
-          onPress={() => {
-            setEmail('test@example.com');
-            setPassword('password123');
-            console.log('Test values set manually');
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.buttonText}>Set Test Values</Text>
-        </TouchableOpacity>
-
-        {/* Test navigation button */}
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#f39c12', marginTop: 10 }]} 
-          onPress={() => {
-            console.log('Testing navigation...');
-            console.log('Navigation object:', navigation);
-            try {
-              navigation.navigate("Signup");
-              console.log('Navigation to Signup successful');
-            } catch (navError) {
-              console.error('Navigation test error:', navError);
-            }
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.buttonText}>Test Navigation</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -294,16 +213,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  debugContainer: {
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  debugText: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 5,
-  },
+
 });

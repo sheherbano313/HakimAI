@@ -1,9 +1,11 @@
 const express = require('express');
 const JSONDatabase = require('../utils/database');
 const auth = require('../middleware/auth');
+const RAGService = require('../utils/ragService');
 
 const router = express.Router();
 const plantsDB = new JSONDatabase('medicinal_plants.json');
+const ragService = new RAGService();
 
 // Gemini API configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY_T;
@@ -193,49 +195,9 @@ router.post('/save', auth, (req, res) => {
   }
 });
 
-// Helper function to generate fallback responses
-function generateFallbackResponse(message, plants) {
-  const lowerMessage = message.toLowerCase();
-  
-  // Search for relevant plants based on the question
-  const relevantPlants = plants.filter(plant => {
-    const uses = (plant.Uses || '').toLowerCase();
-    const symptoms = (plant.Symptoms || '').toLowerCase();
-    const scientificName = (plant['Scientific Name'] || '').toLowerCase();
-    const localName = (plant['Local Name'] || '').toLowerCase();
-    
-    return uses.includes(lowerMessage) || 
-           symptoms.includes(lowerMessage) ||
-           scientificName.includes(lowerMessage) ||
-           localName.includes(lowerMessage);
-  });
-  
-  if (relevantPlants.length > 0) {
-    const plant = relevantPlants[0];
-    return `Based on my database, I found some relevant information:
 
-🌿 Plant: ${plant['Scientific Name']} (${plant['Local Name']})
-📋 Uses: ${plant.Uses || 'Not specified'}
-🧪 Preparation: ${plant['Preparation & Dosage'] || 'Not specified'}
-⚠️ Side Effects: ${plant['Side Effects / Precautions'] || 'Not specified'}
 
-Note: This is basic information from my database. For comprehensive medical advice, please consult a healthcare professional.`;
-  }
-  
-  // Generic response if no specific plants found
-  return `I understand you're asking about "${message}". While I have a database of traditional medicinal plants, I'm currently unable to provide a comprehensive AI-generated response. 
-
-However, I can tell you that my database contains information about ${plants.length} medicinal plants from the Himalayan region, including their uses, preparation methods, and safety precautions.
-
-For specific medical advice, I recommend:
-1. Consulting a healthcare professional
-2. Researching from reliable medical sources
-3. Being cautious with traditional remedies
-
-Would you like me to search my database for specific plants or conditions?`;
-}
-
-// Chatbot endpoint
+// Chatbot endpoint with RAG (Retrieval-Augmented Generation)
 router.post('/chatbot', async (req, res) => {
   try {
     // Check if Gemini API key is available
@@ -255,149 +217,61 @@ router.post('/chatbot', async (req, res) => {
       });
     }
 
-    console.log('Chatbot request received:', message);
+    console.log('🤖 RAG Chatbot: Processing query:', message);
 
-    // Get all medicinal plants data
+    // Get all medicinal plants data for fallback
     const allPlants = plantsDB.read();
-    console.log(`📚 Loaded ${allPlants.length} medicinal plants for context`);
     
     if (!allPlants || allPlants.length === 0) {
       throw new Error('No medicinal plants data available');
     }
-    
-    // Create a context string with relevant plant information
-    const plantsContext = allPlants.map(plant => {
-      return `Plant: ${plant['Scientific Name']} (${plant['Local Name']})
- Family: ${plant.Family}
- Uses: ${plant.Uses || 'Not specified'}
- Preparation: ${plant['Preparation & Dosage'] || 'Not specified'}
- Side Effects: ${plant['Side Effects / Precautions'] || 'Not specified'}
- ---`;
-    }).join('\n');
-    
-    console.log('📝 Plants context length:', plantsContext.length);
-    console.log('📝 Sample context (first 500 chars):', plantsContext.substring(0, 500));
 
-    const systemPrompt = `You are a knowledgeable herbal medicine expert specializing in traditional remedies from the Himalayan region. You have access to a comprehensive database of medicinal plants and their properties.
+    // Set a timeout for the RAG operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('RAG operation timeout')), 15000); // 15 seconds timeout
+    });
 
-CRITICAL INSTRUCTIONS:
-1. ALWAYS base your answers on the provided medicinal plants data
-2. If a question cannot be answered using the available data, clearly state: "I don't have enough information about that specific condition in my database. Please consult a healthcare professional."
-3. NEVER make up information or suggest remedies not in the data
-4. Always emphasize consulting healthcare professionals for serious conditions
-5. Include safety warnings and side effects from the data
-
-When providing remedies:
-- Reference specific plants from the data when possible
-- Include preparation methods and dosages from the data
-- Always mention safety precautions and side effects
-- Be clear about traditional vs. modern medical advice
-- Use the exact plant names from the data
-
-Available medicinal plants data:
-${plantsContext}
-
-Remember: Your role is to provide information based on traditional knowledge, but always prioritize safety and recommend professional medical consultation when appropriate.`;
-
-    const userPrompt = `User Question: ${message}
-
-Please provide a helpful response based ONLY on the available medicinal plants data. If the question cannot be answered with the available data, clearly state that and suggest consulting a healthcare professional. Include specific plant recommendations, preparation methods, and safety warnings when applicable.`;
-
-    const fullPrompt = `${systemPrompt}
-
-${userPrompt}`;
-
-    console.log('📝 Full prompt length:', fullPrompt.length);
-    
-    // Gemini has input limits, so we might need to truncate the context
-    const maxPromptLength = 30000; // Conservative limit for Gemini
-    let finalPrompt = fullPrompt;
-    
-    if (fullPrompt.length > maxPromptLength) {
-      console.log('⚠️ Prompt too long, truncating context...');
-      const contextLength = plantsContext.length;
-      const availableLength = maxPromptLength - (fullPrompt.length - contextLength);
-      
-      if (availableLength > 1000) {
-        const truncatedContext = plantsContext.substring(0, availableLength - 1000) + '...';
-        finalPrompt = `${systemPrompt.replace(plantsContext, truncatedContext)}
-
-${userPrompt}`;
-        console.log('📝 Truncated prompt length:', finalPrompt.length);
-      } else {
-        throw new Error('Prompt too long even after truncation');
-      }
-    }
-
-    // Call Gemini API
     try {
-      console.log('🌿 Sending request to Gemini API...');
-      console.log('🔑 API Key available:', !!GEMINI_API_KEY);
-      console.log('📡 API URL:', GEMINI_API_URL.replace(GEMINI_API_KEY, '***HIDDEN***'));
-
-      const geminiResponse = await fetch(GEMINI_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `${finalPrompt}`
-            }]
-          }]
-        })
-      });
-
-      console.log('📥 Gemini response status:', geminiResponse.status);
-      console.log('📥 Gemini response headers:', Object.fromEntries(geminiResponse.headers.entries()));
-
-      if (!geminiResponse.ok) {
-        const errorText = await geminiResponse.text();
-        console.error('❌ Gemini API error response:', errorText);
-        throw new Error(`Gemini API error: ${geminiResponse.status} - ${errorText}`);
-      }
-
-      const geminiData = await geminiResponse.json();
-      console.log('📋 Gemini response data structure:', Object.keys(geminiData));
-
-      // Check if Gemini response has the expected structure
-      if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content) {
-        console.error('❌ Unexpected Gemini response structure:', JSON.stringify(geminiData, null, 2));
-        throw new Error('Invalid response structure from Gemini API');
-      }
-
-      const aiResponse = geminiData.candidates[0].content.parts[0].text;
-      console.log('✅ Gemini response text length:', aiResponse.length);
-
-      console.log('Gemini response generated successfully');
-
-      // Return successful response inside the try block where aiResponse is defined
+      // Use RAG system to generate answer with timeout
+      const ragResult = await Promise.race([
+        ragService.generateRAGAnswer(message),
+        timeoutPromise
+      ]);
+      
+      console.log(`✅ RAG: Generated answer with confidence: ${ragResult.confidence}`);
+      
       return res.json({
         success: true,
-        message: 'Chatbot response generated',
+        message: 'RAG response generated successfully',
         data: {
           question: message,
-          answer: aiResponse,
-          timestamp: new Date().toISOString()
+          answer: ragResult.answer,
+          confidence: ragResult.confidence,
+          sources: ragResult.sources,
+          timestamp: new Date().toISOString(),
+          method: 'rag'
         }
       });
-    } catch (apiError) {
-      console.error('❌ Gemini API call failed:', apiError);
-
-      // Fallback: Provide basic information from local data
+      
+    } catch (ragError) {
+      console.error('❌ RAG system failed:', ragError.message);
+      
+      // Fallback to simple keyword matching
       console.log('🔄 Using fallback response from local data...');
-
-      const fallbackResponse = generateFallbackResponse(message, allPlants);
-
+      
+      const fallbackResult = ragService.generateFallbackAnswer(message, allPlants);
+      
       return res.json({
         success: true,
-        message: 'Fallback response generated (Gemini API unavailable)',
+        message: 'Fallback response generated (RAG system unavailable)',
         data: {
           question: message,
-          answer: fallbackResponse,
+          answer: fallbackResult.answer,
+          confidence: fallbackResult.confidence,
+          sources: fallbackResult.sources,
           timestamp: new Date().toISOString(),
-          note: 'This is a fallback response as the AI service is currently unavailable. Please consult healthcare professionals for medical advice.'
+          method: 'fallback',
+          note: 'This is a fallback response as the RAG system is currently unavailable. Please consult healthcare professionals for medical advice.'
         }
       });
     }
@@ -419,9 +293,54 @@ ${userPrompt}`;
       });
     }
 
+    if (error.message.includes('timeout')) {
+      return res.status(408).json({
+        success: false,
+        error: 'Request timeout. Please try again.'
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: 'Failed to generate chatbot response. Please try again.'
+    });
+  }
+});
+
+// Test RAG system endpoint
+router.post('/test-rag', async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Query is required' 
+      });
+    }
+
+    console.log('🧪 Testing RAG system with query:', query);
+
+    // Test the RAG system
+    const ragResult = await ragService.generateRAGAnswer(query);
+    
+    res.json({
+      success: true,
+      message: 'RAG test completed',
+      data: {
+        query,
+        answer: ragResult.answer,
+        confidence: ragResult.confidence,
+        sources: ragResult.sources,
+        method: 'rag'
+      }
+    });
+
+  } catch (error) {
+    console.error('RAG test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test RAG system'
     });
   }
 });

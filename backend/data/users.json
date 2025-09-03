@@ -16,5 +16,14 @@
     "role": "user",
     "id": "meoir1soj4erhcjpmnh",
     "createdAt": "2025-08-23T17:14:06.168Z"
+  },
+  {
+    "name": "admin",
+    "email": "admin@gmail.com",
+    "password": "$2a$10$3YuwOFXcxMAUR2w95sDUFu2KPwX3hmrvkn5eUMeM2zEJxzXGXQz7K",
+    "phone": "",
+    "role": "user",
+    "id": "mf47l6905muck6fqi9i",
+    "createdAt": "2025-09-03T16:45:55.044Z"
   }
 ]
