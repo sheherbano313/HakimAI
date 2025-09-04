@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import CustomLogo from "../components/CustomLogo";
@@ -27,7 +27,9 @@ export default function ModulesScreen() {
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={Platform.OS === 'web'}
+          bounces={Platform.OS !== 'web'}
+          scrollEventThrottle={16}
         >
           <View style={styles.logoContainer}>
             <CustomLogo size="large" color="#fff" />
@@ -77,12 +79,17 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    ...(Platform.OS === 'web' && {
+      height: '100vh',
+      overflowY: 'auto',
+    }),
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 20,
+    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
   },
   logoContainer: {
     alignItems: "center",

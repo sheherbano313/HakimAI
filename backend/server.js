@@ -87,31 +87,31 @@ app.get('/api/hakims', (req, res) => {
   res.json({
     success: true,
     hakims: [
-      {
-        id: '1',
-        name: 'Dr. Ahmed Khan',
-        specialization: 'Herbal Medicine',
-        experience: '15 years',
-        location: 'Karachi',
-        phone: '+92-300-1234567',
-        rating: 4.8
-      },
-      {
-        id: '2',
-        name: 'Dr. Fatima Ali',
-        specialization: 'Traditional Medicine',
-        experience: '20 years',
-        location: 'Lahore',
-        phone: '+92-300-2345678',
-        rating: 4.9
-      },
+      // {
+      //   id: '1',
+      //   name: 'Dr. Ahmed Khan',
+      //   specialization: 'Herbal Medicine',
+      //   experience: '15 years',
+      //   location: 'Karachi',
+      //   phone: '+92-300-1234567',
+      //   rating: 4.8
+      // },
+      // {
+      //   id: '2',
+      //   name: 'Dr. Fatima Ali',
+      //   specialization: 'Traditional Medicine',
+      //   experience: '20 years',
+      //   location: 'Lahore',
+      //   phone: '+92-300-2345678',
+      //   rating: 4.9
+      // },
       {
         id: '3',
-        name: 'Dr. Muhammad Hassan',
+        name: 'Haji Methai',
         specialization: 'Unani Medicine',
         experience: '12 years',
-        location: 'Islamabad',
-        phone: '+92-300-3456789',
+        location: 'Skardu',
+        phone: '+92-33333333333',
         rating: 4.7
       }
     ]
@@ -144,7 +144,7 @@ app.get('/api/contact', (req, res) => {
     contact: {
       email: 'support@hakimai.com',
       phone: '+92-300-1234567',
-      address: 'Karachi, Pakistan',
+      address: 'Skardu, GB Pakistan',
       website: 'https://hakimai.com',
       socialMedia: {
         facebook: 'https://facebook.com/hakimai',

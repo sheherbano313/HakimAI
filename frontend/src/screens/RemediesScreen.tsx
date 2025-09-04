@@ -162,7 +162,9 @@ export default function RemediesScreen() {
         keyExtractor={(item) => item.id}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContentContainer}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={Platform.OS === 'web'}
+        bounces={Platform.OS !== 'web'}
+        scrollEventThrottle={16}
         ListFooterComponent={renderLoadingIndicator}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -227,10 +229,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
     elevation: 5,
   },
   headerTitle: {
@@ -246,9 +245,16 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flex: 1,
     padding: 20,
+    ...(Platform.OS === 'web' && {
+      height: 'calc(100vh - 200px)',
+      overflowY: 'auto',
+    }),
   },
   messagesContentContainer: {
     paddingBottom: 100, // Add padding at the bottom to prevent content from being hidden behind the input
+    ...(Platform.OS === 'web' && {
+      minHeight: '100%',
+    }),
   },
   messageContainer: {
     marginBottom: 10,
@@ -264,10 +270,7 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
     padding: 12,
     borderRadius: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.1)',
     elevation: 2,
   },
   userBubble: {

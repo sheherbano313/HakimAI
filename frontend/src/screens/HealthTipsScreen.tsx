@@ -219,7 +219,9 @@ export default function HealthTipsScreen() {
           data={tips}
           keyExtractor={(item) => item.id}
           renderItem={renderTipCard}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={Platform.OS === 'web'}
+          bounces={Platform.OS !== 'web'}
+          scrollEventThrottle={16}
           contentContainerStyle={styles.listContainer}
           refreshing={loading}
           onRefresh={fetchHealthTips}
@@ -259,7 +261,9 @@ export default function HealthTipsScreen() {
         keyExtractor={(item) => item.id}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContentContainer}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={Platform.OS === 'web'}
+        bounces={Platform.OS !== 'web'}
+        scrollEventThrottle={16}
         ListFooterComponent={renderLoadingIndicator}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -355,9 +359,16 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flex: 1,
     padding: 20,
+    ...(Platform.OS === 'web' && {
+      height: 'calc(100vh - 200px)',
+      overflowY: 'auto',
+    }),
   },
   messagesContentContainer: {
     paddingBottom: 100, // Add padding at the bottom to prevent content from being hidden behind the input
+    ...(Platform.OS === 'web' && {
+      minHeight: '100%',
+    }),
   },
   messageContainer: {
     marginBottom: 10,
@@ -442,10 +453,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#eee",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    boxShadow: '0px -2px 3px rgba(0, 0, 0, 0.05)',
     elevation: 2,
   },
   textInput: {
@@ -481,16 +489,16 @@ const styles = StyleSheet.create({
   // Styles for tips view
   listContainer: {
     padding: 20,
+    ...(Platform.OS === 'web' && {
+      minHeight: '100%',
+    }),
   },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     elevation: 3,
   },
   categoryBadge: {
