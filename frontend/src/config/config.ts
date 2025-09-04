@@ -5,10 +5,10 @@ export const CONFIG = {
   API: {
     // For mobile development, use your computer's IP address
     // Replace 192.168.18.36 with your actual computer's IP address
-    BASE_URL: __DEV__ ? 'http://192.168.18.36:5001/api' : 'http://localhost:5001/api',
+    // BASE_URL: __DEV__ ? 'http://192.168.18.36:5000/api' : 'http://localhost:5000/api',
     
     // Alternative: Use localhost for web development
-    // BASE_URL: 'http://localhost:5000/api',
+    BASE_URL: 'http://localhost:5000/api',
     
     TIMEOUT: 15000, // Increased timeout for mobile
   },
