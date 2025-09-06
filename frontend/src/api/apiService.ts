@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { storage } from '../utils/storage';
-import { CONFIG } from '../config/config';
+import { CONFIG, getApiUrl } from '../config/config';
 
 // Type definitions
 export interface ApiResponse<T = any> {
@@ -106,13 +106,13 @@ export interface ContactResponse {
 }
 
 // API Configuration
-const API_BASE_URL = CONFIG.API.BASE_URL;
+const API_BASE_URL = getApiUrl();
 const STORAGE_KEYS = CONFIG.STORAGE;
 console.log("thehehhhhhhhh",API_BASE_URL, API_BASE_URL);
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: CONFIG.API.TIMEOUT || 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -176,6 +176,7 @@ export const authAPI = {
   login: async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
     console.log('API Service: Login called with credentials:', credentials);
     console.log('API Service: Making request to:', `${API_BASE_URL}/auth/login`);
+    console.log('API Service: Full URL:', `${API_BASE_URL}/auth/login`);
     
     try {
       const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
@@ -187,6 +188,12 @@ export const authAPI = {
       return response.data;
     } catch (error) {
       console.error('API Service: Login error:', error);
+      console.error('API Service: Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       throw error;
     }
   },

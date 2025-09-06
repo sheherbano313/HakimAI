@@ -19,8 +19,8 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("test@example.com");
+  const [password, setPassword] = useState("password123");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -31,30 +31,22 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      console.log('Attempting login with:', { email, password });
       const response: AuthResponse = await authAPI.login({ email, password });
-      try {
+      console.log('Login response:', response);
+      
+      if (response.success) {
+        console.log('Login successful, navigating to App...');
         navigation.replace("App");
-      } catch (navError) {
-        console.error('Navigation error:', navError);
-        // Fallback to Alert if navigation fails
-        Alert.alert("Success", response.message, [
-          {
-            text: "OK",
-            onPress: () => {
-              try {
-                navigation.replace("App");
-              } catch (retryError) {
-                console.error('Navigation retry error:', retryError);
-              }
-            }
-          }
-        ]);
+      } else {
+        console.log('Login failed:', response.message);
+        Alert.alert("Login Failed", response.message || "Login failed. Please try again.");
       }
     } catch (error: any) {
       console.error('Login error:', error);
       console.error('Error response data:', error.response?.data);
       console.error('Error status:', error.response?.status);
-      const errorMessage = error.response?.data?.error || "Login failed. Please try again.";
+      const errorMessage = error.response?.data?.error || error.message || "Login failed. Please try again.";
       Alert.alert("Login Failed", errorMessage);
     } finally {
       setLoading(false);
@@ -131,6 +123,22 @@ export default function LoginScreen() {
           onPress={() => navigation.navigate("Signup")}
         >
           <Text style={styles.signupText}>Create Account</Text>
+        </TouchableOpacity>
+
+        {/* Test Connection Button */}
+        <TouchableOpacity
+          style={[styles.signupButton, { backgroundColor: '#ff9800', marginTop: 10 }]}
+          onPress={async () => {
+            try {
+              const response = await fetch('http://192.168.18.22:5000/health');
+              const data = await response.json();
+              Alert.alert("Connection Test", `Backend is reachable: ${JSON.stringify(data)}`);
+            } catch (error) {
+              Alert.alert("Connection Test", `Backend not reachable: ${error.message}`);
+            }
+          }}
+        >
+          <Text style={[styles.signupText, { color: '#fff' }]}>Test Connection</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>

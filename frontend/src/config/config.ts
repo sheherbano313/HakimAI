@@ -5,7 +5,9 @@ export const CONFIG = {
   API: {
     // For mobile development, use your computer's IP address
     // Replace 192.168.18.36 with your actual computer's IP address
-    BASE_URL: __DEV__ ? 'http://192.168.18.36:5000/api' : 'http://localhost:5000/api',
+    // BASE_URL: __DEV__ ? 'http://192.168.18.36:5000/api' : 'http://localhost:5000/api',
+    // BASE_URL: __DEV__ ? 'http://192.168.10.33:5000/api' : 'http://localhost:5000/api',
+    BASE_URL: __DEV__ ? 'http://192.168.18.22:5000/api' : 'http://localhost:5000/api',
     
     // Alternative: Use localhost for web development
     // BASE_URL: 'http://localhost:5000/api',
@@ -58,13 +60,10 @@ export const CONFIG = {
 export const getApiUrl = () => {
   // In development, you might want to use different URLs for different platforms
   if (__DEV__) {
-    // For web development
-    if (typeof window !== 'undefined') {
-      return 'http://localhost:5000/api';
-    }
-    
-    // For mobile development, use your computer's IP
-    return 'http://192.168.18.36:5000/api';
+    // For now, always use IP address in development to ensure mobile connectivity
+    // This can be changed back to localhost for web development if needed
+    console.log('Using IP address for development:', 'http://192.168.18.22:5000/api');
+    return 'http://192.168.18.22:5000/api';
   }
   
   return CONFIG.API.BASE_URL;

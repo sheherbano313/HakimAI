@@ -154,6 +154,13 @@ class RAGService {
       if (lowerQuery.includes('headache') && (uses.includes('headache') || uses.includes('pain') || uses.includes('migraine'))) score += 2;
       if (lowerQuery.includes('stomach') && (uses.includes('stomach') || uses.includes('gastro') || uses.includes('digest'))) score += 2;
       if (lowerQuery.includes('skin') && (uses.includes('skin') || uses.includes('dermat') || uses.includes('wound'))) score += 2;
+      if (lowerQuery.includes('diabetes') && (uses.includes('diabetes') || uses.includes('diabetic') || uses.includes('blood sugar') || uses.includes('glucose') || uses.includes('blood glucose') || uses.includes('sugar'))) score += 4;
+      if (lowerQuery.includes('cough') && (uses.includes('cough') || uses.includes('respiratory') || uses.includes('bronchitis') || uses.includes('asthma'))) score += 2;
+      if (lowerQuery.includes('cold') && (uses.includes('cold') || uses.includes('flu') || uses.includes('respiratory') || uses.includes('nasal'))) score += 2;
+      if (lowerQuery.includes('pain') && (uses.includes('pain') || uses.includes('analgesic') || uses.includes('anti-inflammatory'))) score += 2;
+      if (lowerQuery.includes('digest') && (uses.includes('digest') || uses.includes('stomach') || uses.includes('gastro') || uses.includes('intestinal'))) score += 2;
+      if (lowerQuery.includes('liver') && (uses.includes('liver') || uses.includes('hepat') || uses.includes('jaundice'))) score += 2;
+      if (lowerQuery.includes('kidney') && (uses.includes('kidney') || uses.includes('renal') || uses.includes('urinary'))) score += 2;
       
       if (score > 0) {
         relevantPlants.push({
@@ -186,18 +193,16 @@ class RAGService {
       const relevantPlants = await this.retrieveRelevantPlants(query, 3);
       
       if (relevantPlants.length === 0) {
-        return {
-          answer: "I don't have enough information about that specific condition in my database. Please consult a healthcare professional for medical advice.",
-          sources: [],
-          confidence: 'low'
-        };
+        // Use the improved fallback method
+        return this.generateFallbackAnswer(query, this.plantsData || []);
       }
       
       // Step 2: Create context from relevant plants
       const context = relevantPlants.map(result => result.text).join('\n\n');
       
-      // Step 3: Generate answer using LLM
-      const prompt = `You are a knowledgeable herbal medicine expert specializing in traditional remedies from the Himalayan region.
+      // Step 3: Generate answer using LLM or fallback to improved response
+      try {
+        const prompt = `You are a knowledgeable herbal medicine expert specializing in traditional remedies from the Himalayan region.
 
 CRITICAL INSTRUCTIONS:
 1. Base your answer ONLY on the provided medicinal plants data
@@ -205,6 +210,8 @@ CRITICAL INSTRUCTIONS:
 3. NEVER make up information or suggest remedies not in the data
 4. Always emphasize consulting healthcare professionals for serious conditions
 5. Include safety warnings and side effects from the data
+6. For diabetes questions, look for plants that mention diabetes, blood sugar, glucose, or anti-diabetic properties
+7. Provide specific plant names, preparation methods, and dosages from the data
 
 Available medicinal plants data:
 ${context}
@@ -213,20 +220,26 @@ User Question: ${query}
 
 Please provide a helpful response based ONLY on the available medicinal plants data. Include specific plant recommendations, preparation methods, and safety warnings when applicable.`;
 
-      const result = await this.model.generateContent(prompt);
-      const answer = result.response.text();
-      
-      console.log(`✅ RAG: Generated answer for query: "${query}"`);
-      
-      return {
-        answer,
-        sources: relevantPlants.map(r => ({
-          plant: r.plant['Scientific Name'],
-          localName: r.plant['Local Name'],
-          similarity: r.similarity
-        })),
-        confidence: relevantPlants[0].similarity > 0.7 ? 'high' : 'medium'
-      };
+        const result = await this.model.generateContent(prompt);
+        const answer = result.response.text();
+        
+        console.log(`✅ RAG: Generated answer for query: "${query}"`);
+        
+        return {
+          answer,
+          sources: relevantPlants.map(r => ({
+            plant: r.plant['Scientific Name'],
+            localName: r.plant['Local Name'],
+            similarity: r.similarity
+          })),
+          confidence: relevantPlants[0].similarity > 0.7 ? 'high' : 'medium'
+        };
+      } catch (llmError) {
+        console.log('⚠️ LLM failed, using improved fallback with found plants');
+        // Use improved fallback with the found plants
+        const plants = relevantPlants.map(r => r.plant);
+        return this.generateFallbackAnswer(query, plants);
+      }
       
     } catch (error) {
       console.error('Error generating RAG answer:', error);
@@ -238,7 +251,44 @@ Please provide a helpful response based ONLY on the available medicinal plants d
   generateFallbackAnswer(query, plants) {
     const lowerQuery = query.toLowerCase();
     
-    // Simple keyword matching
+    // Handle general greetings and questions
+    if (lowerQuery.includes('hi') || lowerQuery.includes('hello') || lowerQuery.includes('hey')) {
+      return {
+        answer: `Hello! I'm your Herbal Medicine AI Assistant specializing in Himalayan medicinal plants. I can help you with:
+
+🌿 Information about specific medicinal plants
+💊 Traditional remedies for various health conditions
+📚 Preparation methods and dosages
+⚠️ Safety precautions and side effects
+
+What would you like to know about herbal medicine? You can ask about specific conditions like diabetes, fever, cough, or any other health concerns.`,
+        sources: [],
+        confidence: 'high'
+      };
+    }
+    
+    // Handle general questions about capabilities
+    if (lowerQuery.includes('what') && (lowerQuery.includes('can') || lowerQuery.includes('do'))) {
+      return {
+        answer: `I can help you with information about Himalayan medicinal plants! Here's what I can do:
+
+🔍 **Search for specific plants** - Ask about any plant by name
+💊 **Find remedies for conditions** - Tell me about symptoms or health issues
+📋 **Get preparation methods** - Learn how to prepare herbal remedies
+⚠️ **Safety information** - Understand precautions and side effects
+🌿 **Plant identification** - Learn about local and scientific names
+
+My database contains ${plants.length} medicinal plants from the Himalayan region. Try asking something like:
+- "What herbs help with diabetes?"
+- "Tell me about chamomile"
+- "How to treat fever naturally?"
+- "What plants help with digestive issues?"`,
+        sources: [],
+        confidence: 'high'
+      };
+    }
+    
+    // Simple keyword matching for specific queries
     const relevantPlants = plants.filter(plant => {
       const uses = (plant.Uses || '').toLowerCase();
       const symptoms = (plant.Symptoms || '').toLowerCase();
@@ -256,34 +306,43 @@ Please provide a helpful response based ONLY on the available medicinal plants d
       return {
         answer: `Based on my database, I found some relevant information:
 
-🌿 Plant: ${plant['Scientific Name']} (${plant['Local Name']})
-📋 Uses: ${plant.Uses || 'Not specified'}
-🧪 Preparation: ${plant['Preparation & Dosage'] || 'Not specified'}
-⚠️ Side Effects: ${plant['Side Effects / Precautions'] || 'Not specified'}
+🌿 **Plant:** ${plant['Scientific Name']} (${plant['Local Name']})
+📋 **Uses:** ${plant.Uses || 'Not specified'}
+🧪 **Preparation:** ${plant['Preparation & Dosage'] || 'Not specified'}
+⚠️ **Side Effects:** ${plant['Side Effects / Precautions'] || 'Not specified'}
 
-Note: This is basic information from my database. For comprehensive medical advice, please consult a healthcare professional.`,
+**Note:** This is basic information from my database. For comprehensive medical advice, please consult a healthcare professional.`,
         sources: [{
           plant: plant['Scientific Name'],
           localName: plant['Local Name'],
-          similarity: 0.5
+          similarity: 0.7
         }],
-        confidence: 'low'
+        confidence: 'medium'
       };
     }
     
+    // Enhanced response for no matches
     return {
-      answer: `I understand you're asking about "${query}". While I have a database of traditional medicinal plants, I'm currently unable to provide a comprehensive response.
+      answer: `I understand you're asking about "${query}". While I have a comprehensive database of ${plants.length} Himalayan medicinal plants, I couldn't find specific matches for your query.
 
-However, I can tell you that my database contains information about ${plants.length} medicinal plants from the Himalayan region, including their uses, preparation methods, and safety precautions.
+**Here's how I can help you better:**
 
-For specific medical advice, I recommend:
-1. Consulting a healthcare professional
-2. Researching from reliable medical sources
-3. Being cautious with traditional remedies
+🔍 **Be more specific** - Try asking about particular conditions like:
+   - "What herbs help with diabetes?"
+   - "Plants for treating fever"
+   - "Remedies for cough and cold"
 
-Would you like me to search my database for specific plants or conditions?`,
+🌿 **Ask about specific plants** - You can ask about any plant by name:
+   - "Tell me about chamomile"
+   - "What is Rhodiola used for?"
+
+💊 **Describe symptoms** - Tell me about specific health concerns:
+   - "I have digestive issues"
+   - "Help with skin problems"
+
+**Remember:** Always consult healthcare professionals for serious medical conditions. I'm here to provide information about traditional herbal remedies, not replace medical advice.`,
       sources: [],
-      confidence: 'low'
+      confidence: 'medium'
     };
   }
 }

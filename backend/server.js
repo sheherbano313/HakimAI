@@ -4,7 +4,8 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Enhanced CORS configuration for mobile development
 const corsOptions = {
@@ -14,11 +15,21 @@ const corsOptions = {
     'http://localhost:8081',  // React Native Metro
     'http://localhost:8082',  // React Native Metro (alternative port)
     'exp://localhost:19000',  // Expo Go
-    'http://192.168.18.36:19006', // Local network (your actual IP)
-    'http://192.168.18.36:3000', // Alternative local network
-    'http://192.168.18.36:8081', // Alternative local network
-    'http://192.168.18.36:8082', // Alternative local network
-    'exp://192.168.18.36:19000', // Expo Go on local network
+    // 'http://192.168.18.36:19006', // Local network (your actual IP)
+    // 'http://192.168.18.36:3000', // Alternative local network
+    // 'http://192.168.18.36:8081', // Alternative local network
+    // 'http://192.168.18.36:8082', // Alternative local network
+    // 'exp://192.168.18.36:19000', // Expo Go on local network
+    // 'http://192.168.10.33:19006', // Local network (your actual IP)
+    // 'http://192.168.10.33:3000', // Alternative local network
+    // 'http://192.168.10.33:8081', // Alternative local network
+    // 'http://192.168.10.33:8082', // Alternative local network
+    // 'exp://192.168.10.33:19000', // Expo Go on local network
+    'http://192.168.18.22:19006', // Local network (your actual IP)
+    'http://192.168.18.22:3000', // Alternative local network
+    'http://192.168.18.22:8081', // Alternative local network
+    'http://192.168.18.22:8082', // Alternative local network
+    'exp://192.168.18.22:19000', // Expo Go on local network
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -196,10 +207,11 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 HakimAI Backend Server running on http://localhost:${PORT}`);
-  console.log(`📚 API Documentation: http://localhost:${PORT}`);
-  console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
-  console.log(`🌿 Medicinal Plants: http://localhost:${PORT}/api/medicinal-plants`);
-  console.log(`💊 Remedies: http://localhost:${PORT}/api/remedies`);
+app.listen(PORT, HOST, () => {
+  const baseUrl = `http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`;
+  console.log(`🚀 HakimAI Backend Server running on ${baseUrl}`);
+  console.log(`📚 API Documentation: ${baseUrl}`);
+  console.log(`🔐 Auth endpoints: ${baseUrl}/api/auth`);
+  console.log(`🌿 Medicinal Plants: ${baseUrl}/api/medicinal-plants`);
+  console.log(`💊 Remedies: ${baseUrl}/api/remedies`);
 });
